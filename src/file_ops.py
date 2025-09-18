@@ -7,7 +7,7 @@ from os.path import getsize
 
 
 @dataclass
-class File:
+class RealFile:
     name: str
     path: str
     size: int
@@ -18,15 +18,19 @@ class File:
 @dataclass
 class DeviceFiles:
     stat_dev: str
-    files: list[File]
+    files: list[RealFile]
 
 
 class StoreFile:
-    def store(self, root, file):
-        full_path: Path = Path(root, file)
-        return File(
-            name=file,
-            path=str(root),
+    def __init__(self, root, file) -> None:
+        self.root = root
+        self.file = file
+
+    def store(self) -> RealFile:
+        full_path: Path = Path(self.root, self.file)
+        return RealFile(
+            name=self.file,
+            path=str(self.root),
             size=getsize(full_path),
             last_mod=datetime.fromtimestamp(full_path.stat().st_mtime),
             stat_ino=str(full_path.stat().st_ino),
@@ -34,29 +38,39 @@ class StoreFile:
 
 
 class StoreDevFiles:
-    def store(self, path, walked):
-        disk_files = DeviceFiles(stat_dev=str(Path(path).stat().st_dev), files=list())
-        for root, dirs, files in walked:
+    def __init__(self, path, walked) -> None:
+        self.path = path
+        self.walked = walked
+
+    def store(self) -> DeviceFiles:
+        disk_files = DeviceFiles(
+            stat_dev=str(Path(self.path).stat().st_dev), files=list()
+        )
+        for root, dirs, files in self.walked:
             for file in files:
                 if (
                     "$RECYCLE.BIN" not in str(root)
                     and not mimetypes.guess_file_type(file)[0] == None
                     and mimetypes.guess_file_type(file)[0].startswith("video")
                 ):
-                    disk_files.files.append(
-                        StoreFile.store(StoreFile(), root=root, file=file)
-                    )
+                    store_file = StoreFile(root=root, file=file)
+                    disk_files.files.append(store_file.store())
         return disk_files
 
 
 class ScanDev:
-    def walk_dirs(self, init_path: str):
-        path: Path = Path(init_path)
-        walked: Iterator[tuple[Path, list[str], list[str]]] = Path.walk(path)
-        disk_files = StoreDevFiles.store(StoreDevFiles(), path=path, walked=walked)
+    def __init__(self, init_path: str) -> None:
+        self.path: Path = Path(init_path)
+
+    def walk_dirs(self) -> DeviceFiles:
+        walked: Iterator[tuple[Path, list[str], list[str]]] = Path.walk(self.path)
+        store_dev_files = StoreDevFiles(path=self.path, walked=walked)
+        disk_files = store_dev_files.store()
         return disk_files
 
 
 if __name__ == "__main__":
-    ScanDev.walk_dirs(ScanDev(), "d:/temp/Странный видео диск/")
+    scan_dev = ScanDev("d:/temp/Странный видео диск/")
+    scanned = scan_dev.walk_dirs()
+    del scan_dev
     print("Смотрим")
