@@ -67,10 +67,5 @@ class ScanDev:
         store_dev_files = StoreDevFiles(path=self.path, walked=walked)
         disk_files = store_dev_files.store()
         return disk_files
-
-
-if __name__ == "__main__":
-    scan_dev = ScanDev("d:/temp/Странный видео диск/")
-    scanned = scan_dev.walk_dirs()
-    del scan_dev
-    print("Смотрим")
+    
+    
