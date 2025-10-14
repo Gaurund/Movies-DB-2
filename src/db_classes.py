@@ -45,17 +45,23 @@ class File(Base):
     """
     The table to store files.
 
-    file_name: a full name of a file
-    disk_path: an absolute path to a folder contains the file
-    st_ino: a unique identifier of the file
-    last_modified: a date time stamp
-    size: the file's size in bytes
+    `file_name`: a full name of a file
 
-    disk_id: an ID of a disk has the file
-    disk: an entity of the disk
+    `disk_path`: an absolute path to a folder contains the file
 
-    movie_id: an ID of a movie linked to the file
-    movie: an entity of the movie
+    `st_ino`: a unique identifier of the file
+
+    `last_modified`: a date time stamp
+
+    `size`: the file's size in bytes
+
+    `disk_id`: an ID of a disk has the file
+
+    `disk`: an entity of the disk
+
+    `movie_id`: an ID of a movie linked to the file
+
+    `movie`: an entity of the movie
     """
 
     __tablename__ = "file_table"
@@ -127,12 +133,18 @@ class Disk(Base):
     """
     The table to store devices.
 
-    disk_name: a name of a disk
-    disk_image: a URI to an image file of the disk
-    disk_capacity: a capacity of the disk
-    disk_free: the free space of the disk
-    st_dev: a unique identifier of the disk
-    files: list of files stored on the disk
+    `disk_name`: a name of a disk
+
+    `disk_image`: a URI to an image file of the disk
+
+    `disk_capacity`: a capacity of the disk
+
+    `disk_free`: the free space of the disk
+
+    `st_dev`: a unique identifier of the disk
+
+    `files`: list of files stored on the disk
+
     """
 
     __tablename__ = "disk_table"
@@ -187,15 +199,15 @@ class Movie(Base):
     """
     The table to store movies and TV shows.
 
-    name_original: an original name of the movie.
-    name_russian: a russian translation of the name.
-    duration: the movie duration time.
-    premiere_date: the realse year of the movie.
-    imdb_link: a URL to IMDb page of the movie.
-    description: some details one would like to write down.
-    active: a boolean that answers is movie consider deleted from DB.
-    files: a list of files linked to the movie.
-    genres: a list of genres linked to the movie.
+    `name_original`: an original name of the movie.
+    `name_russian`: a russian translation of the name.
+    `duration`: the movie duration time.
+    `premiere_date`: the realse year of the movie.
+    `imdb_link`: a URL to IMDb page of the movie.
+    `description`: some details one would like to write down.
+    `active`: a boolean that answers is movie consider deleted from DB.
+    `files`: a list of files linked to the movie.
+    `genres`: a list of genres linked to the movie.
     """
 
     __tablename__ = "movie_table"

@@ -2,6 +2,7 @@ from dataclasses import dataclass
 from datetime import datetime
 import mimetypes
 from pathlib import Path
+from shutil import disk_usage
 from typing import Iterator
 from os.path import getsize
 
@@ -21,6 +22,7 @@ class RealFile:
 
     `stat_ino`: str
     """
+
     name: str
     path: str
     size: int
@@ -29,15 +31,33 @@ class RealFile:
 
 
 @dataclass
+class Device:
+    """
+    Store a device data.
+
+    `capacity`: int
+
+    `free`: int
+
+    `st_dev`: str
+    """
+
+    capacity: int = 0
+    free: int = 0
+    st_dev: str = ""
+
+
+@dataclass
 class DeviceFiles:
     """
-    Store list of files and the unique ID of the device.
+    Store list of files and the device object.
 
-    `stat_dev`: str
-    
+    `device`: Device
+
     `files`: list[RealFile]
     """
-    stat_dev: str
+
+    device: Device
     files: list[RealFile]
 
 
@@ -48,7 +68,9 @@ def get_dev_files(path_str) -> DeviceFiles:
     """
     path: Path = Path(path_str)
     walked: Iterator[tuple[Path, list[str], list[str]]] = Path.walk(path)
-    dev_files = DeviceFiles(stat_dev=str(Path(path).stat().st_dev), files=list())
+    total, used, free = disk_usage(path)
+    device = Device(capacity=total, free=free, st_dev=str(Path(path).stat().st_dev))
+    dev_files = DeviceFiles(device=device, files=[])
     for root, dirs, files in walked:
         for file in files:
             if (

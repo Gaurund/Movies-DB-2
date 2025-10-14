@@ -2,7 +2,8 @@ from dataclasses import dataclass
 from datetime import time
 from sqlalchemy import create_engine, select
 from sqlalchemy.orm import Session
-from db_classes import Base, Disk, File, Movie
+from src.db_classes import Base, Disk, File, Movie
+from src.file_ops import Device, DeviceFiles, RealFile
 
 
 @dataclass
@@ -12,7 +13,8 @@ class DBDev:
     image: str
     capacity: int
     free_space: int
-    stat_dev: str
+    st_dev: str
+
 
 @dataclass
 class DBMovie:
@@ -43,47 +45,99 @@ class RetrieveDBDev:
             image=self.disk.disk_image,
             capacity=self.disk.disk_capacity,
             free_space=self.disk.disk_free,
-            stat_dev=self.disk.st_dev,
+            st_dev=self.disk.st_dev,
         )
 
 
-class ConnectDB:
+class DB_connection:
     def __init__(self, engine: str) -> None:
         self.engine = create_engine(engine)
         Base.metadata.create_all(self.engine)
 
-
-class DBReader:
-    def __init__(self, conn: ConnectDB) -> None:
-        self.conn = conn
-
-    def get_disk_by_stat(self, stat_dev: str) -> int | None:
+    def get_disk_by_stat(self, st_dev: str) -> int | None:
         """
         Checking is the device already in DB
         and return device's id or None.
         """
-        with Session(self.conn.engine) as session:
+        with Session(self.engine) as session:
             disk_id = session.scalars(
-                select(Disk.id).where(Disk.st_dev == stat_dev)
+                select(Disk.id).where(Disk.st_dev == st_dev)
             ).one_or_none()
         return disk_id
+
+    def get_disk_by_name(self, name: str) -> int | None:
+        with Session(self.engine) as session:
+            disk_id = session.scalars(
+                select(Disk.id).where(Disk.disk_name == name)
+            ).one_or_none()
+        return disk_id
+
+    def is_dev_name_exists(self, name: str) -> bool:
+        return self.get_disk_by_name(name) is not None
 
     def get_disks(self) -> list:
         """
         Return dictionary of storage devices.
         """
         disks = list()
-        with Session(self.conn.engine) as session:
+        with Session(self.engine) as session:
             db_disks = session.scalars(select(Disk)).all()
             for d in db_disks:
                 getter = RetrieveDBDev(d)
                 disks.append(getter.retrieve())
         return disks
 
+    ###################
+    # Insert operations
+    ###################
+    def insert_disk(self, name: str, capacity: int, free: int, st_dev: str) -> None:
+        with Session(self.engine) as session:
+            session.add(
+                Disk(
+                    disk_name=name,
+                    disk_capacity=capacity,
+                    disk_free=free,
+                    st_dev=st_dev,
+                )
+            )
+            session.commit()
 
-if __name__ == "__main__":
-    engine: str = "sqlite:///movie.db"
-    conn = ConnectDB(engine=engine)
-    db_reader = DBReader(conn=conn)
-    disks = db_reader.get_disks()
-    [print(f"id:{d.id}\tname:{d.name}\tcapacity:{d.capacity}") for d in disks]
+    def insert_files(self, dev_files: DeviceFiles) -> DeviceFiles:
+        """
+        Accept `DeviceFiles` object and return such object with 
+        files already registred in the DB.
+        """
+        already_in_db = DeviceFiles(device=dev_files.device, files=[])
+        self.update_disk_usage(device=dev_files.device)
+        with Session(self.engine) as session:
+            disk_id = session.scalars(
+                select(Disk.id).where(Disk.st_dev == dev_files.device.st_dev)
+            ).one()
+            for file in dev_files.files:
+                file_from_db = session.scalars(
+                    select(File)
+                    .where(File.file_name == file.name)
+                    .where(File.disk_id == disk_id)
+                ).all()
+                if len(file_from_db) == 0:
+                    session.add(
+                        File(
+                            file_name=file.name,
+                            disk_path=file.path,
+                            st_ino=file.stat_ino,
+                            last_modified=file.last_mod,
+                            size=file.size,
+                            disk_id=disk_id,
+                        )
+                    )
+                else:
+                    already_in_db.files.append(file)
+            session.commit()
+        return already_in_db
+
+    def update_disk_usage(self, device: Device) -> None:
+        with Session(self.engine) as session:
+            session.query(Disk).filter(Disk.st_dev == device.st_dev).update(
+                {Disk.disk_free: device.free}
+            )
+            session.commit()
