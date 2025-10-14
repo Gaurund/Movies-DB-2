@@ -73,18 +73,15 @@ class View:
         self.btn_ok_msg.config(command=callbacks["press_ok"])
 
     def directory_request(self) -> str:
-        dir_path = filedialog.askdirectory(initialdir="D:/TMP/0")
+        dir_path = filedialog.askdirectory(initialdir="D:/TEMP/v")
         return dir_path
 
     def new_device_name_request(self, title, prompt) -> str | None:
         new_name = simpledialog.askstring(title=title, prompt=prompt)
         return new_name
 
-    def show_repeated_files(self, alread_in_db: DeviceFiles):
-        pass
-
-    def show_ok(self, message: str = "Успех."):
+    def show_message_box(self, message: str = "Успех.", default="ok", icon="info"):
         message_box = messagebox.Message(
-            parent=self.root, default="ok", message=message, icon="info"
+            parent=self.root, default=default, message=message, icon=icon
         )
         message_box.show()

@@ -16,16 +16,17 @@ class Controller:
         )
 
     def show_ok(self):
-        self.view.show_ok()
+        self.view.show_message_box()
 
     def scan_dir_path(self) -> None:
         dir_path = self.view.directory_request()
-        # Нужная обработка на случай отмены
-        dev_files = get_dev_files(path_str=dir_path)
-        if len(dev_files.files) == 0:
-            self.view.show_ok("По указанному пути нет файлов.")
-        else:
-            self.insert_files_in_db(dev_files)
+        if not dir_path == "":
+            # Нужная обработка на случай отмены
+            dev_files = get_dev_files(path_str=dir_path)
+            if len(dev_files.files) == 0:
+                self.view.show_message_box("По указанному пути нет видео файлов.")
+            else:
+                self.insert_files_in_db(dev_files)
 
     def insert_files_in_db(self, dev_files: DeviceFiles) -> None:
         if self.is_dev_in_db(dev_files.device.st_dev) is None:
@@ -37,10 +38,22 @@ class Controller:
                 st_dev=dev_files.device.st_dev,
             )
         already_in_db = self.conn.insert_files(dev_files=dev_files)
-        if len(already_in_db.files) > 0:
-            self.view.show_repeated_files(already_in_db)
+        if len(already_in_db.files) == 0:
+            message = "Путь успешно отсканирован. Файлы внесены в фильмотеку."
+
+        elif len(already_in_db.files) == len(dev_files.files):
+            message = (
+                "По указанному пути все файлы уже были внесены в фильмотеку ранее."
+            )
+
         else:
-            self.view.show_ok("Путь успешно отсканирован. Файлы внесены в фильмотеку.")
+            message = "Следующие файлы уже были в базе данных:\n"
+            for i, file in enumerate(already_in_db.files):
+                message += "\n" + file.name
+                if i == 10:
+                    message += "\n..."
+                    break
+        self.view.show_message_box(message=message)
 
     def get_new_device_name(self) -> str:
         title = "Обнаружен новый диск"
