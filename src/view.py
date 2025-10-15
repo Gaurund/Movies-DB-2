@@ -25,10 +25,11 @@ class View:
         self.top_frame.grid(column=0, row=0, columnspan=2)
 
         self.btn_scan_disk = ttk.Button(self.top_frame, text="Сканировать путь...")
+        self.btn_match_file = ttk.Button(self.top_frame, text="Сопоставить")
+        
         self.btn_scan_disk.grid(column=0, row=0)
+        self.btn_match_file.grid(column=1, row=0)
 
-        self.btn_ok_msg = ttk.Button(self.top_frame, text="TEST")
-        self.btn_ok_msg.grid(column=1, row=0)
 
     def left_frame_render(self):
         self.left_frame = ttk.Frame(self.root)
@@ -70,7 +71,8 @@ class View:
 
     def setup_callbacks(self, callbacks: dict) -> None:
         self.btn_scan_disk.config(command=callbacks["press_scan_dir_path"])
-        self.btn_ok_msg.config(command=callbacks["press_ok"])
+        self.btn_match_file.config(command=callbacks["press_match_file"])
+
 
     def directory_request(self) -> str:
         dir_path = filedialog.askdirectory(initialdir="D:/TEMP/v")

@@ -75,17 +75,22 @@ class DB_connection:
     def is_dev_name_exists(self, name: str) -> bool:
         return self.get_disk_by_name(name) is not None
 
-    def get_disks(self) -> list:
-        """
-        Return dictionary of storage devices.
-        """
-        disks = list()
-        with Session(self.engine) as session:
-            db_disks = session.scalars(select(Disk)).all()
-            for d in db_disks:
-                getter = RetrieveDBDev(d)
-                disks.append(getter.retrieve())
-        return disks
+    # def get_disks(self) -> list:
+    #     """
+    #     Return dictionary of storage devices.
+    #     """
+    #     disks = list()
+    #     with Session(self.engine) as session:
+    #         db_disks = session.scalars(select(Disk)).all()
+    #         for d in db_disks:
+    #             getter = RetrieveDBDev(d)
+    #             disks.append(getter.retrieve())
+    #     return disks
+
+    def get_empties(self) -> list:
+
+
+        return []
 
     ###################
     # Insert operations
