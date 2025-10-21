@@ -1,6 +1,7 @@
 from src.file_ops import get_dev_files, RealFile, Device, DeviceFiles
 from src.db_ops import DB_connection
 from src.view import View
+from src.name_cleaner import name_cleaner
 
 
 class Controller:
@@ -58,14 +59,22 @@ class Controller:
 
     def match_file(self):
         # Собрать в список все файлы из БД где нет файлов
+        empties = self.conn.get_empties()
         # В цикле переберать файлы каждый раз предлагая завершить операцию
-        # От файла нужно взять название папки и имя файла
-        # Очистить имя файла от всего лишнего
+        for file in empties:
+            # От файла нужно взять название папки и имя файла
+            last_slash = file.disk_path.rindex("\\")
+            path_name = file.disk_path[last_slash + 1 : :]
+            # Очистить имя файла от всего лишнего
+            file_name = name_cleaner(file.file_name)
+            search_name = self.view.choose_name(path_name, file_name)
+            # Получить имя для поиска обратно
         # Сформировать строку для поиска в IMDB
         # Получить список подходящих фильмов
         # Если список пустой, начать новый поиск с новым именем
         # Взять из списка подходящий фильм и открыв страницу, собрать все данные
         # Данные внести в БД
+        print("Ждем")
         pass
 
     def is_dev_in_db(self, st_dev: str) -> int | None:

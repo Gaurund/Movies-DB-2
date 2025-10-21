@@ -72,6 +72,12 @@ class DB_connection:
             ).one_or_none()
         return disk_id
 
+    def get_empties(self):
+        with Session(self.engine) as session:
+            empties = session.scalars(select(File).where(File.movie_id == None)).all()
+
+        return empties
+
     def is_dev_name_exists(self, name: str) -> bool:
         return self.get_disk_by_name(name) is not None
 
@@ -86,11 +92,6 @@ class DB_connection:
     #             getter = RetrieveDBDev(d)
     #             disks.append(getter.retrieve())
     #     return disks
-
-    def get_empties(self) -> list:
-
-
-        return []
 
     ###################
     # Insert operations
@@ -109,7 +110,7 @@ class DB_connection:
 
     def insert_files(self, dev_files: DeviceFiles) -> DeviceFiles:
         """
-        Accept `DeviceFiles` object and return such object with 
+        Accept `DeviceFiles` object and return such object with
         files already registred in the DB.
         """
         already_in_db = DeviceFiles(device=dev_files.device, files=[])

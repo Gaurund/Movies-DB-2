@@ -1,4 +1,5 @@
 from tkinter import (
+    Toplevel,
     messagebox,
     ttk,
     filedialog,
@@ -26,10 +27,9 @@ class View:
 
         self.btn_scan_disk = ttk.Button(self.top_frame, text="Сканировать путь...")
         self.btn_match_file = ttk.Button(self.top_frame, text="Сопоставить")
-        
+
         self.btn_scan_disk.grid(column=0, row=0)
         self.btn_match_file.grid(column=1, row=0)
-
 
     def left_frame_render(self):
         self.left_frame = ttk.Frame(self.root)
@@ -73,7 +73,6 @@ class View:
         self.btn_scan_disk.config(command=callbacks["press_scan_dir_path"])
         self.btn_match_file.config(command=callbacks["press_match_file"])
 
-
     def directory_request(self) -> str:
         dir_path = filedialog.askdirectory(initialdir="D:/TEMP/v")
         return dir_path
@@ -87,3 +86,21 @@ class View:
             parent=self.root, default=default, message=message, icon=icon
         )
         message_box.show()
+
+    def choose_name(self, path_name: str, file_name: str) -> str:
+        print(path_name + "\\" + file_name)
+        dialog = Toplevel(master=self.root)
+        frame = ttk.Frame(master=dialog)
+        btn_path = ttk.Button(master=frame, text=path_name)
+        btn_file = ttk.Button(master=frame, text=file_name)
+
+        dialog.grid()
+        frame.grid()
+        btn_path.grid(column=0,row=0)
+        btn_file.grid(column=0,row=1)
+        # Получить варианты имён и задать пользователю вопрос
+        # какой из трёх вариантов выбрать для поиска:
+        # имя папки
+        # имя файла
+        # свой вариант
+        return ""
