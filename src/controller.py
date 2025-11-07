@@ -17,24 +17,34 @@ class Controller:
         )
 
     def scan_dir_path(self) -> None:
-        dir_path = self.view.directory_request()
+        dir_path: str = self.view.directory_request()
         if not dir_path == "":
-            dev_files = get_dev_files(path_str=dir_path)
+            dev_files: DeviceFiles = get_dev_files(path_str=dir_path)
             if len(dev_files.files) == 0:
                 self.view.show_message_box("По указанному пути нет видео файлов.")
             else:
                 self.insert_files_in_db(dev_files)
 
+    # Получить код девайса
+    # Проверить наличие кода девайса в БД
+    # Если нет вызвать в виде запрос на имя для девайса
+    # Если имя пустое повторить
+    # Если имя уже есть в БД повторить
+    # Если всё в порядке, внести имя в базу данных
+    # Получить список файлов
+    # Внести список файлов в БД
+
     def insert_files_in_db(self, dev_files: DeviceFiles) -> None:
         if self.is_dev_in_db(dev_files.device.st_dev) is None:
-            new_name = self.get_new_device_name()
             self.conn.insert_disk(
-                name=new_name,
                 capacity=dev_files.device.capacity,
                 free=dev_files.device.free,
                 st_dev=dev_files.device.st_dev,
             )
+        dev_name = self.conn.get_disk_name_by_stat(dev_files.device.st_dev)
+
         already_in_db = self.conn.insert_files(dev_files=dev_files)
+
         if len(already_in_db.files) == len(dev_files.files):
             message = (
                 "По указанному пути все файлы уже были внесены в фильмотеку ранее."
@@ -43,19 +53,35 @@ class Controller:
             message = "Путь успешно отсканирован. Файлы внесены в фильмотеку."
         self.view.show_message_box(message=message)
 
-    def get_new_device_name(self) -> str:
-        title = "Обнаружен новый диск"
-        prompt = "Введите название для диска: "
-        while True:
-            name = self.view.new_device_name_request(title=title, prompt=prompt)
-            if not name:
-                title = "Название обязательно"
-                prompt = "Пожалуйста, введите название для нового диска: "
-            elif self.is_dev_name_exists(name):
-                title = "Обнаружено совпадение"
-                prompt = "Такое имя уже есть в базе данных. Пожалуйста, введите другое название для нового диска: "
-            else:
-                return name
+        if dev_name is None:
+            title: str = "Обнаружен новый диск"
+            prompt: str = "Введите название для диска: "
+            command = self.get_new_device_name
+            self.view.new_device_name_request(title=title, prompt=prompt, command=command)
+
+    def get_new_device_name(self, new_name: str):
+        if new_name == "":
+            self.view.new_device_name_request
+
+        message="Yoho!!!"
+        self.view.show_message_box(message=message)
+
+    # def get_new_device_name(self) -> str:
+    #     title = "Обнаружен новый диск"
+    #     prompt = "Введите название для диска: "
+
+    #     name = self.view.new_device_name_request(title=title, prompt=prompt)
+    #     if not name:
+    #         title = "Название обязательно"
+    #         prompt = "Пожалуйста, введите название для нового диска: "
+    #         name = self.get_new_device_name()
+    #     elif self.is_dev_name_exists(name):
+    #         title = "Обнаружено совпадение"
+    #         prompt = "Такое имя уже есть в базе данных. Пожалуйста, введите другое название для нового диска: "
+    #         name = self.get_new_device_name()
+    #     else:
+    #         self.view.right_frame_render()
+    #         return name
 
     def match_file(self):
         # Собрать в список все файлы из БД где нет файлов

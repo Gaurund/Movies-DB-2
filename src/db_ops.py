@@ -65,6 +65,13 @@ class DB_connection:
             ).one_or_none()
         return disk_id
 
+    def get_disk_name_by_stat(self, st_dev: str) -> str | None:
+        with Session(self.engine) as session:
+            disk_name = session.scalars(
+                select(Disk.disk_name).where(Disk.st_dev == st_dev)
+            ).one_or_none()
+        return disk_name
+
     def get_disk_by_name(self, name: str) -> int | None:
         with Session(self.engine) as session:
             disk_id = session.scalars(
@@ -96,7 +103,9 @@ class DB_connection:
     ###################
     # Insert operations
     ###################
-    def insert_disk(self, name: str, capacity: int, free: int, st_dev: str) -> None:
+    def insert_disk(
+        self, capacity: int, free: int, st_dev: str, name: str | None = None
+    ) -> None:
         with Session(self.engine) as session:
             session.add(
                 Disk(

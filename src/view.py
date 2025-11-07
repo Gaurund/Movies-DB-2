@@ -1,4 +1,5 @@
 from tkinter import (
+    StringVar,
     Toplevel,
     messagebox,
     ttk,
@@ -77,9 +78,27 @@ class View:
         dir_path = filedialog.askdirectory(initialdir="D:/TEMP/v")
         return dir_path
 
-    def new_device_name_request(self, title, prompt) -> str | None:
-        new_name = simpledialog.askstring(title=title, prompt=prompt)
-        return new_name
+    def new_device_name_request(self, title: str, prompt: str, command) -> None:
+        def push_it():
+            new_name = self.input.get()
+            command(new_name)
+        
+        self.clear_frame(frame=self.right_frame)
+        self.right_frame.grid(column=1, row=1)
+        self.label_title = ttk.Label(self.right_frame, text=title)
+        self.label_prompt = ttk.Label(self.right_frame, text=prompt)
+
+        self.input = StringVar()
+        self.entry_prompt = ttk.Entry(
+            self.right_frame, textvariable=self.input, width=40
+        )
+
+        self.btn_enter = ttk.Button(self.right_frame, command=push_it, text="Ввод")
+
+        self.label_title.grid(column=0, row=0)
+        self.label_prompt.grid(column=0, row=1)
+        self.entry_prompt.grid(column=0, row=2)
+        self.btn_enter.grid(column=0, row=3)
 
     def show_message_box(self, message: str = "Успех.", default="ok", icon="info"):
         message_box = messagebox.Message(
@@ -96,11 +115,18 @@ class View:
 
         dialog.grid()
         frame.grid()
-        btn_path.grid(column=0,row=0)
-        btn_file.grid(column=0,row=1)
+        btn_path.grid(column=0, row=0)
+        btn_file.grid(column=0, row=1)
         # Получить варианты имён и задать пользователю вопрос
         # какой из трёх вариантов выбрать для поиска:
         # имя папки
         # имя файла
         # свой вариант
         return ""
+
+    def clear_frame(self, frame: ttk.Frame) -> None:
+        """
+        Clears the given frame by destroying all child widgets.
+        """
+        for child in frame.winfo_children():
+            child.destroy()

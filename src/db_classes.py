@@ -150,7 +150,7 @@ class Disk(Base):
     __tablename__ = "disk_table"
 
     id: Mapped[int] = mapped_column(primary_key=True)
-    disk_name: Mapped[str] = mapped_column(String(30))
+    disk_name: Mapped[str] = mapped_column(String(30), nullable=True)
     disk_image: Mapped[str] = mapped_column(String(260), nullable=True)
     disk_capacity: Mapped[int] = mapped_column(BigInteger)
     disk_free: Mapped[int] = mapped_column(BigInteger)
