@@ -17,6 +17,9 @@ class Controller:
         )
 
     def scan_dir_path(self) -> None:
+        """
+        Scan the given path and populate DB.
+        """
         dir_path = self.view.directory_request()
         if not dir_path == "":
             dev_files = get_dev_files(path_str=dir_path)
@@ -26,6 +29,9 @@ class Controller:
                 self.insert_files_in_db(dev_files)
 
     def insert_files_in_db(self, dev_files: DeviceFiles) -> None:
+        """
+        Populate DB with given files objects.
+        """
         if self.is_dev_in_db(dev_files.device.st_dev) is None:
             new_name = self.get_new_device_name()
             self.conn.insert_disk(
@@ -76,6 +82,18 @@ class Controller:
         # Данные внести в БД
         print("Ждем")
         pass
+
+    def get_tree_data(self):
+        movies = self.conn.get_all_movies()
+        files = self.conn.get_all_files()
+        disks = self.conn.get_all_disks()
+        f_m_dict = {}
+        for f in files:
+            if f.disk_id not in f_m_dict:
+                f_m_dict[f.disk_id] = []
+            if f.movie_id == None:
+                f_m_dict[f.disk_id].append(f)
+        return f_m_dict
 
     def is_dev_in_db(self, st_dev: str) -> int | None:
         return self.conn.get_disk_by_stat(st_dev=st_dev)

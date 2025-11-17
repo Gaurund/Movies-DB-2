@@ -75,8 +75,23 @@ class DB_connection:
     def get_empties(self):
         with Session(self.engine) as session:
             empties = session.scalars(select(File).where(File.movie_id == None)).all()
-
         return empties
+
+    def get_all_movies(self):
+        with Session(self.engine) as session:
+            movies = session.scalars(select(Movie)).all()
+        return movies
+
+    def get_all_files(self):
+        with Session(self.engine) as session:
+            files = session.scalars(select(File)).all()
+        return files
+
+    def get_all_disks(self):
+        with Session(self.engine) as session:
+            disks = session.scalars(select(Disk)).all()
+        return disks
+
 
     def is_dev_name_exists(self, name: str) -> bool:
         return self.get_disk_by_name(name) is not None

@@ -32,12 +32,15 @@ class View:
 
     def left_frame_render(self):
         self.left_frame = ttk.Frame(self.root)
-
         self.left_frame.grid(column=0, row=1)
 
-        self.label_left = ttk.Label(self.left_frame, text="LEFT")
+        self.tree_view = ttk.Treeview(self.left_frame)
+        self.insert_items_in_tree()
+        self.tree_view.grid(column=0, row=0)
 
-        self.label_left.grid(column=0, row=0)
+    def insert_items_in_tree(self):
+        p = self.tree_view.insert(parent="", index=1, text="Parent", open=True)
+        p1 = self.tree_view.insert(parent=p, index=1, text="Child")
 
     def right_frame_render(self):
         self.right_frame = ttk.Frame(self.root)
@@ -96,8 +99,8 @@ class View:
 
         dialog.grid()
         frame.grid()
-        btn_path.grid(column=0,row=0)
-        btn_file.grid(column=0,row=1)
+        btn_path.grid(column=0, row=0)
+        btn_file.grid(column=0, row=1)
         # Получить варианты имён и задать пользователю вопрос
         # какой из трёх вариантов выбрать для поиска:
         # имя папки
