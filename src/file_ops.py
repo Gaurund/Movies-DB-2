@@ -63,7 +63,7 @@ class DeviceFiles:
 
 def get_dev_files(path_str) -> DeviceFiles:
     """
-    Take a string with Windows' path and return the `DeviceFiles` object
+    Take a string with Windows path and return the `DeviceFiles` object
     with all video files in it.
     """
     path: Path = Path(path_str)

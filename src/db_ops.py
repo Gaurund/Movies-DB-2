@@ -56,8 +56,8 @@ class DB_connection:
 
     def get_disk_by_stat(self, st_dev: str) -> int | None:
         """
-        Checking is the device already in DB
-        and return device's id or None.
+        Checks if the device already exists in the database
+        and returns the device ID or None.
         """
         with Session(self.engine) as session:
             disk_id = session.scalars(

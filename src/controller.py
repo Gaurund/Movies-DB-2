@@ -21,7 +21,7 @@ class Controller:
         if not dir_path == "":
             dev_files = get_dev_files(path_str=dir_path)
             if len(dev_files.files) == 0:
-                self.view.show_message_box("По указанному пути нет видео файлов.")
+                self.view.display_message_box("По указанному пути нет видео файлов.")
             else:
                 self.insert_files_in_db(dev_files)
 
@@ -41,7 +41,7 @@ class Controller:
             )
         else:
             message = "Путь успешно отсканирован. Файлы внесены в фильмотеку."
-        self.view.show_message_box(message=message)
+        self.view.display_message_box(message=message)
 
     def get_new_device_name(self) -> str:
         title = "Обнаружен новый диск"
