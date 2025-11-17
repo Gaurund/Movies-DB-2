@@ -14,7 +14,6 @@ class View:
         self.root = root
         self.root.title("Фильмотека")
         self.root.geometry("1200x800")
-        # self.root.grid(column=0, row=0)
 
         self.top_frame_render()
         self.left_frame_render()
@@ -44,6 +43,7 @@ class View:
         self.right_frame = ttk.Frame(self.root)
         self.right_frame.grid(column=1, row=1)
 
+    def display_movie_frame(self):
         self.lbl_device = ttk.Label(self.right_frame, text="Носитель:")
         self.lbl_path = ttk.Label(self.right_frame, text="Путь:")
         self.lbl_file_name = ttk.Label(self.right_frame, text="Имя файла:")
@@ -81,7 +81,7 @@ class View:
         new_name = simpledialog.askstring(title=title, prompt=prompt)
         return new_name
 
-    def show_message_box(self, message: str = "Успех.", default="ok", icon="info"):
+    def display_message_box(self, message: str = "Успех.", default="ok", icon="info"):
         message_box = messagebox.Message(
             parent=self.root, default=default, message=message, icon=icon
         )
