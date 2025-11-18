@@ -16,7 +16,6 @@ class Controller:
             {
                 "press_scan_dir_path": self.scan_dir_path,
                 "press_match_file": self.match_file,
-                # "get_tree_data": self.get_tree_data,
             }
         )
 

@@ -15,8 +15,9 @@ class View:
         self.root = root
         self.root.title("Фильмотека")
         self.root.geometry("1200x800")
+        # self.root.grid_columnconfigure(0, weight=1)
+
         self.tree_data = []
-        # self.first_render()
 
     def first_render(self) -> None:
         self.top_frame_render()
@@ -26,7 +27,9 @@ class View:
 
     def top_frame_render(self):
         self.top_frame = ttk.Frame(self.root)
-        self.top_frame.grid(column=0, row=0, columnspan=2)
+        self.top_frame.grid(column=0, row=0, columnspan=2, sticky="w")
+        # self.top_frame.columnconfigure(0, weight=1)
+        # self.top_frame.rowconfigure(0, weight=1)
 
         self.btn_scan_disk = ttk.Button(self.top_frame, text="Сканировать путь...")
         self.btn_match_file = ttk.Button(self.top_frame, text="Сопоставить")
@@ -36,10 +39,12 @@ class View:
 
     def left_frame_render(self):
         self.left_frame = ttk.Frame(self.root)
-        self.left_frame.grid(column=0, row=1)
+        self.left_frame.grid(column=0, row=1, sticky="NS")
+        # self.left_frame.columnconfigure(1, weight=1)
+        # self.left_frame.rowconfigure(1, weight=1, minsize=800)
 
         tree_columns = {
-            "#0": {"label": "Имя", "name": "name", "stretch": True, "width": "300"},
+            "#0": {"label": "Имя", "name": "name", "stretch": True, "width": "400"},
             "#1": {
                 "label": "Время",
                 "name": "duration",
@@ -54,13 +59,36 @@ class View:
             },
         }
         self.tree_view = ttk.Treeview(
-            self.left_frame, columns=[v["name"] for v in tree_columns.values()]
+            self.left_frame,
+            columns=[v["name"] for v in tree_columns.values()],
+            height=800,
         )
         for k, v in tree_columns.items():
             self.tree_view.column(k, stretch=v["stretch"], width=v["width"])
             self.tree_view.heading(k, text=v["label"])
         self.insert_items_in_tree()
-        self.tree_view.grid(column=0, row=0)
+        self.tree_view.grid(column=0, row=0, sticky="NS")
+        # self.tree_view.grid_columnconfigure(1, weight=1)
+        # self.tree_view.grid_rowconfigure(1, weight=1)
+
+        self.tree_view_scrollbar_y = ttk.Scrollbar(
+            master=self.left_frame, orient="vertical", command=self.tree_view.yview
+        )
+        self.tree_view_scrollbar_x = ttk.Scrollbar(
+            master=self.left_frame, orient="horizontal", command=self.tree_view.xview
+        )
+
+        self.tree_view_scrollbar_y.grid(column=1, row=0, sticky="NS")
+        self.tree_view_scrollbar_x.grid(column=0, row=1, sticky="EW")
+        # self.tree_view_scrollbar_y.grid_columnconfigure(1, weight=1)
+        # self.tree_view_scrollbar_y.grid_rowconfigure(1, weight=1)
+        # self.tree_view_scrollbar_x.grid_columnconfigure(1, weight=1)
+        # self.tree_view_scrollbar_x.grid_rowconfigure(1, weight=1)
+        self.tree_view.configure(
+            yscrollcommand=self.tree_view_scrollbar_y.set,
+            xscrollcommand=self.tree_view_scrollbar_x.set,
+        )
+
 
     def insert_items_in_tree(self):
         for i, disk in enumerate(self.tree_data):
@@ -75,16 +103,16 @@ class View:
                     text = f.name_original
                 else:
                     text = f.file_name
+                duration = f.duration if f.duration is not None else ""
+                premiere_date = f.premiere_date if f.premiere_date is not None else ""
                 c = self.tree_view.insert(
-                    parent=p,
-                    index=j,
-                    text=text,
-                    values=[f.duration, f.premiere_date]
+                    parent=p, index=j, text=text, values=[duration, premiere_date]
                 )
 
     def right_frame_render(self):
         self.right_frame = ttk.Frame(self.root)
         self.right_frame.grid(column=1, row=1)
+        # self.right_frame.columnconfigure(1, weight=1)
 
     def display_movie_frame(self):
         self.lbl_device = ttk.Label(self.right_frame, text="Носитель:")
