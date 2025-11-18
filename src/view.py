@@ -9,6 +9,7 @@ from tkinter import (
 from src.file_ops import DeviceFiles
 from src.db_ops import DBDev, DBFileMovie
 
+
 class View:
     def __init__(self, root) -> None:
         self.root = root
@@ -37,7 +38,27 @@ class View:
         self.left_frame = ttk.Frame(self.root)
         self.left_frame.grid(column=0, row=1)
 
-        self.tree_view = ttk.Treeview(self.left_frame)
+        tree_columns = {
+            "#0": {"label": "Имя", "name": "name", "stretch": True, "width": "300"},
+            "#1": {
+                "label": "Время",
+                "name": "duration",
+                "stretch": False,
+                "width": "60",
+            },
+            "#2": {
+                "label": "Год",
+                "name": "premiere_date",
+                "stretch": False,
+                "width": "40",
+            },
+        }
+        self.tree_view = ttk.Treeview(
+            self.left_frame, columns=[v["name"] for v in tree_columns.values()]
+        )
+        for k, v in tree_columns.items():
+            self.tree_view.column(k, stretch=v["stretch"], width=v["width"])
+            self.tree_view.heading(k, text=v["label"])
         self.insert_items_in_tree()
         self.tree_view.grid(column=0, row=0)
 
@@ -47,16 +68,19 @@ class View:
             if disk_name is None:
                 disk_name = str(f"Диск id: {disk.id}")
             p = self.tree_view.insert(parent="", index=i, text=disk_name, open=True)
-            for j, f in enumerate(disk.files, start=(i*1000)):
+            for j, f in enumerate(disk.files, start=(i * 1000)):
                 if f.name_russian is not None:
                     text = f.name_russian
                 elif f.name_original is not None:
                     text = f.name_original
                 else:
                     text = f.file_name
-                c = self.tree_view.insert(parent=p, index=j, text=text)
-                
-
+                c = self.tree_view.insert(
+                    parent=p,
+                    index=j,
+                    text=text,
+                    values=[f.duration, f.premiere_date]
+                )
 
     def right_frame_render(self):
         self.right_frame = ttk.Frame(self.root)
