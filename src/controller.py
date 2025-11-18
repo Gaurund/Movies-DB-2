@@ -9,10 +9,14 @@ class Controller:
         self.conn = db_connection
         self.view = view
 
+        tree_data = self.get_tree_data()
+        self.view.tree_data = tree_data
+        self.view.first_render()
         self.view.setup_callbacks(
             {
                 "press_scan_dir_path": self.scan_dir_path,
                 "press_match_file": self.match_file,
+                # "get_tree_data": self.get_tree_data,
             }
         )
 
@@ -84,20 +88,7 @@ class Controller:
         pass
 
     def get_tree_data(self):
-        # movies = self.conn.get_all_movies()
-        # files = self.conn.get_all_files()
-        # disks = self.conn.get_all_disks()
-        f_m_dict = []
-        # for disk in disks:
-        #     for f in disk.files:
-        #         f_m_dict.append(f)
         tree_data = self.conn.collect_tree_data()
-
-        # for f in files:
-        #     if f.disk_id not in f_m_dict:
-        #         f_m_dict[f.disk_id] = []
-        #     if f.movie_id == None:
-        #         f_m_dict[f.disk_id].append(f)
         return tree_data
 
     def is_dev_in_db(self, st_dev: str) -> int | None:

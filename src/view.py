@@ -7,14 +7,17 @@ from tkinter import (
 )
 
 from src.file_ops import DeviceFiles
-
+from src.db_ops import DBDev, DBFileMovie
 
 class View:
     def __init__(self, root) -> None:
         self.root = root
         self.root.title("Фильмотека")
         self.root.geometry("1200x800")
+        self.tree_data = []
+        # self.first_render()
 
+    def first_render(self) -> None:
         self.top_frame_render()
         self.left_frame_render()
         self.right_frame_render()
@@ -39,8 +42,21 @@ class View:
         self.tree_view.grid(column=0, row=0)
 
     def insert_items_in_tree(self):
-        p = self.tree_view.insert(parent="", index=1, text="Parent", open=True)
-        p1 = self.tree_view.insert(parent=p, index=1, text="Child")
+        for i, disk in enumerate(self.tree_data):
+            disk_name = disk.name
+            if disk_name is None:
+                disk_name = str(f"Диск id: {disk.id}")
+            p = self.tree_view.insert(parent="", index=i, text=disk_name, open=True)
+            for j, f in enumerate(disk.files, start=(i*1000)):
+                if f.name_russian is not None:
+                    text = f.name_russian
+                elif f.name_original is not None:
+                    text = f.name_original
+                else:
+                    text = f.file_name
+                c = self.tree_view.insert(parent=p, index=j, text=text)
+                
+
 
     def right_frame_render(self):
         self.right_frame = ttk.Frame(self.root)
@@ -75,6 +91,7 @@ class View:
     def setup_callbacks(self, callbacks: dict) -> None:
         self.btn_scan_disk.config(command=callbacks["press_scan_dir_path"])
         self.btn_match_file.config(command=callbacks["press_match_file"])
+        # self.get_tree_data = callbacks["get_tree_data"]
 
     def directory_request(self) -> str:
         dir_path = filedialog.askdirectory(initialdir="D:/TEMP/v")
