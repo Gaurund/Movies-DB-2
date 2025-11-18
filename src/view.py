@@ -1,4 +1,5 @@
 from tkinter import (
+    Tk,
     Toplevel,
     messagebox,
     ttk,
@@ -11,11 +12,12 @@ from src.db_ops import DBDev, DBFileMovie
 
 
 class View:
-    def __init__(self, root) -> None:
+    def __init__(self, root: Tk) -> None:
         self.root = root
         self.root.title("Фильмотека")
         self.root.geometry("1200x800")
         # self.root.grid_columnconfigure(0, weight=1)
+        # self.root.grid_rowconfigure(0, weight=1)
 
         self.tree_data = []
 
@@ -27,9 +29,9 @@ class View:
 
     def top_frame_render(self):
         self.top_frame = ttk.Frame(self.root)
-        self.top_frame.grid(column=0, row=0, columnspan=2, sticky="w")
+        self.top_frame.grid(column=0, row=0, columnspan=2, sticky="nsw")
         # self.top_frame.columnconfigure(0, weight=1)
-        # self.top_frame.rowconfigure(0, weight=1)
+        # self.top_frame.rowconfigure(0, weight=0)
 
         self.btn_scan_disk = ttk.Button(self.top_frame, text="Сканировать путь...")
         self.btn_match_file = ttk.Button(self.top_frame, text="Сопоставить")
@@ -39,9 +41,9 @@ class View:
 
     def left_frame_render(self):
         self.left_frame = ttk.Frame(self.root)
-        self.left_frame.grid(column=0, row=1, sticky="NS")
+        self.left_frame.grid(column=0, row=1, sticky="NSW")
         # self.left_frame.columnconfigure(1, weight=1)
-        # self.left_frame.rowconfigure(1, weight=1, minsize=800)
+        # self.left_frame.rowconfigure(1, weight=1)
 
         tree_columns = {
             "#0": {"label": "Имя", "name": "name", "stretch": True, "width": "400"},
@@ -60,16 +62,15 @@ class View:
         }
         self.tree_view = ttk.Treeview(
             self.left_frame,
-            columns=[v["name"] for v in tree_columns.values()],
-            height=800,
+            columns=[v["name"] for v in tree_columns.values() if v["name"] != "name"],
         )
         for k, v in tree_columns.items():
             self.tree_view.column(k, stretch=v["stretch"], width=v["width"])
             self.tree_view.heading(k, text=v["label"])
         self.insert_items_in_tree()
-        self.tree_view.grid(column=0, row=0, sticky="NS")
-        # self.tree_view.grid_columnconfigure(1, weight=1)
-        # self.tree_view.grid_rowconfigure(1, weight=1)
+        self.tree_view.grid(column=0, row=0, sticky="N")
+        # self.tree_view.grid_columnconfigure(2, weight=1)
+        # self.tree_view.grid_rowconfigure(2, weight=1)
 
         self.tree_view_scrollbar_y = ttk.Scrollbar(
             master=self.left_frame, orient="vertical", command=self.tree_view.yview
@@ -89,14 +90,23 @@ class View:
             xscrollcommand=self.tree_view_scrollbar_x.set,
         )
 
+        self.l = ttk.Label(master=self.left_frame, text="---")
+        self.l.grid(column=0, row=2)
+
+        self.tree_view.bind(
+            "<<TreeviewSelect>>",
+            lambda e: self.l.configure(
+                text=self.tree_view.index(self.tree_view.focus())
+            ),
+        )
 
     def insert_items_in_tree(self):
-        for i, disk in enumerate(self.tree_data):
+        for idx, disk in enumerate(self.tree_data, start=1):
             disk_name = disk.name
             if disk_name is None:
                 disk_name = str(f"Диск id: {disk.id}")
-            p = self.tree_view.insert(parent="", index=i, text=disk_name, open=True)
-            for j, f in enumerate(disk.files, start=(i * 1000)):
+            p = self.tree_view.insert(parent="", index=idx, text=disk_name, open=True)
+            for j, f in enumerate(disk.files, start=(idx * 1000)):
                 if f.name_russian is not None:
                     text = f.name_russian
                 elif f.name_original is not None:
@@ -106,7 +116,11 @@ class View:
                 duration = f.duration if f.duration is not None else ""
                 premiere_date = f.premiere_date if f.premiere_date is not None else ""
                 c = self.tree_view.insert(
-                    parent=p, index=j, text=text, values=[duration, premiere_date]
+                    iid=f.file_id,
+                    parent=p,
+                    index=j,
+                    text=text,
+                    values=[duration, premiere_date],
                 )
 
     def right_frame_render(self):
