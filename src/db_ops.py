@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 from datetime import time
-from sqlalchemy import create_engine, select
-from sqlalchemy.orm import Session
+from sqlalchemy import create_engine, join, select
+from sqlalchemy.orm import Session, aliased
 from src.db_classes import Base, Disk, File, Movie
 from src.file_ops import Device, DeviceFiles, RealFile
 
@@ -14,39 +14,18 @@ class DBDev:
     capacity: int
     free_space: int
     st_dev: str
+    files: list
 
 
 @dataclass
-class DBMovie:
-    id: int
-    name_original: str
-    name_russian: str
-    duration: time
-    premiere_date: str
-    imdb_link: str
-    description: str
-    is_active: bool
-    files: list
-    type_id: int
-    movie_type: str
-    franchise_id: int
-    franchise: str
-    franchise_part: int
-
-
-class RetrieveDBDev:
-    def __init__(self, disk) -> None:
-        self.disk = disk
-
-    def retrieve(self):
-        return DBDev(
-            id=self.disk.id,
-            name=self.disk.disk_name,
-            image=self.disk.disk_image,
-            capacity=self.disk.disk_capacity,
-            free_space=self.disk.disk_free,
-            st_dev=self.disk.st_dev,
-        )
+class DBFileMovie:
+    file_id: int
+    file_name: str
+    movie_id: int | None
+    name_original: str | None
+    name_russian: str | None
+    duration: time | None
+    premiere_date: str | None
 
 
 class DB_connection:
@@ -93,41 +72,57 @@ class DB_connection:
         return disks
 
     def collect_tree_data(self):
-        tree_data = {}
+        tree_data = []
         with Session(self.engine) as session:
             disks = session.scalars(select(Disk)).all()
-
-            for d in disks:
-                tree_data[d.disk_name] = []
-                files = session.scalars(select(File).where(Disk.id == d.id)).all()
-                for f in files:
-                    if f.movie_id is None:
-                        tree_data[d.disk_name].append(f.file_name)
-                    else:
-                        movie = session.scalars(select(Movie).where(Movie.id == f.movie_id)).one()
-                        if movie.name_russian is not None:
-                            movie_name = movie.name_russian
-                        else:
-                            movie_name = movie.name_original
-                        if movie_name not in tree_data[d.disk_name]:
-                            tree_data[d.disk_name].append(f"{movie_name} - название фильма")
-
+            for idx, disk in enumerate(disks):
+                tree_data.append(
+                    DBDev(
+                        id=disk.id,
+                        name=disk.disk_name,
+                        image=disk.disk_image,
+                        capacity=disk.disk_capacity,
+                        free_space=disk.disk_free,
+                        st_dev=disk.st_dev,
+                        files=[],
+                    )
+                )
+                movies = session.execute(
+                    select(Movie, File).join(File).filter(File.disk_id == disk.id)
+                )
+                empties = session.scalars(
+                    select(File)
+                    .where(File.movie_id == None)
+                    .filter(File.disk_id == disk.id)
+                )
+                for row in movies:
+                    tree_data[idx].files.append(
+                        DBFileMovie(
+                            file_id=row.File.id,
+                            file_name=row.File.file_name,
+                            movie_id=row.Movie.id,
+                            name_original=row.Movie.name_original,
+                            name_russian=row.Movie.name_russian,
+                            duration=row.Movie.duration,
+                            premiere_date=row.Movie.premiere_date,
+                        )
+                    )
+                for e in empties:
+                    tree_data[idx].files.append(
+                        DBFileMovie(
+                            file_id=e.id,
+                            file_name=e.file_name,
+                            movie_id=None,
+                            name_original=None,
+                            name_russian=None,
+                            duration=None,
+                            premiere_date=None,
+                        )
+                    )
         return tree_data
 
     def is_dev_name_exists(self, name: str) -> bool:
         return self.get_disk_by_name(name) is not None
-
-    # def get_disks(self) -> list:
-    #     """
-    #     Return dictionary of storage devices.
-    #     """
-    #     disks = list()
-    #     with Session(self.engine) as session:
-    #         db_disks = session.scalars(select(Disk)).all()
-    #         for d in db_disks:
-    #             getter = RetrieveDBDev(d)
-    #             disks.append(getter.retrieve())
-    #     return disks
 
     ###################
     # Insert operations
