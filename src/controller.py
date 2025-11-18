@@ -84,16 +84,21 @@ class Controller:
         pass
 
     def get_tree_data(self):
-        movies = self.conn.get_all_movies()
-        files = self.conn.get_all_files()
-        disks = self.conn.get_all_disks()
-        f_m_dict = {}
-        for f in files:
-            if f.disk_id not in f_m_dict:
-                f_m_dict[f.disk_id] = []
-            if f.movie_id == None:
-                f_m_dict[f.disk_id].append(f)
-        return f_m_dict
+        # movies = self.conn.get_all_movies()
+        # files = self.conn.get_all_files()
+        # disks = self.conn.get_all_disks()
+        f_m_dict = []
+        # for disk in disks:
+        #     for f in disk.files:
+        #         f_m_dict.append(f)
+        tree_data = self.conn.collect_tree_data()
+
+        # for f in files:
+        #     if f.disk_id not in f_m_dict:
+        #         f_m_dict[f.disk_id] = []
+        #     if f.movie_id == None:
+        #         f_m_dict[f.disk_id].append(f)
+        return tree_data
 
     def is_dev_in_db(self, st_dev: str) -> int | None:
         return self.conn.get_disk_by_stat(st_dev=st_dev)

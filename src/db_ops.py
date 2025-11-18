@@ -92,6 +92,27 @@ class DB_connection:
             disks = session.scalars(select(Disk)).all()
         return disks
 
+    def collect_tree_data(self):
+        tree_data = {}
+        with Session(self.engine) as session:
+            disks = session.scalars(select(Disk)).all()
+
+            for d in disks:
+                tree_data[d.disk_name] = []
+                files = session.scalars(select(File).where(Disk.id == d.id)).all()
+                for f in files:
+                    if f.movie_id is None:
+                        tree_data[d.disk_name].append(f.file_name)
+                    else:
+                        movie = session.scalars(select(Movie).where(Movie.id == f.movie_id)).one()
+                        if movie.name_russian is not None:
+                            movie_name = movie.name_russian
+                        else:
+                            movie_name = movie.name_original
+                        if movie_name not in tree_data[d.disk_name]:
+                            tree_data[d.disk_name].append(f"{movie_name} - название фильма")
+
+        return tree_data
 
     def is_dev_name_exists(self, name: str) -> bool:
         return self.get_disk_by_name(name) is not None
