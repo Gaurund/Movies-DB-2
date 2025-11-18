@@ -44,12 +44,60 @@ class DB_connection:
             ).one_or_none()
         return disk_id
 
+    def get_disk_dict_by_id(self, disk_id: str) -> dict | None:
+        with Session(self.engine) as session:
+            disk = session.scalars(select(Disk).where(Disk.id == disk_id)).one()
+            disk_dict = {
+                "id": disk.id,
+                "disk_name": disk.disk_name,
+                "disk_image": disk.disk_image,
+                "disk_capacity": disk.disk_capacity,
+                "disk_free": disk.disk_free,
+                "st_dev": disk.st_dev,
+            }
+        return disk_dict
+
     def get_disk_by_name(self, name: str) -> int | None:
         with Session(self.engine) as session:
             disk_id = session.scalars(
                 select(Disk.id).where(Disk.disk_name == name)
             ).one_or_none()
         return disk_id
+
+    def get_file_by_id(self, id: int) -> dict | None:
+        with Session(self.engine) as session:
+            file = session.scalars(select(File).where(File.id == id)).one_or_none()
+            if file is None:
+                return None
+            file_dict = {
+                "id": file.id,
+                "file_name": file.file_name,
+                "disk_path": file.disk_path,
+                "st_ino": file.st_ino,
+                "last_modified": file.last_modified,
+                "size": file.size,
+                "is_active": file.is_active,
+                "disk_id": file.disk_id,
+                "disk": file.disk,
+                "movie_id": file.movie_id,
+                "movie": file.movie,
+            }
+        return file_dict
+
+    def get_movie_by_id(self, id):
+        with Session(self.engine) as session:
+            movie = session.scalars(select(Movie).where(Movie.id == id)).one()
+            movie_dict = {
+                "id": movie.id,
+                "name_original": movie.name_original,
+                "name_russian": movie.name_russian,
+                "duration": movie.duration,
+                "premiere_date": movie.premiere_date,
+                "imdb_link": movie.imdb_link,
+                "description": movie.description,
+                "is_active": movie.is_active,
+            }
+        return movie_dict
 
     def get_empties(self):
         with Session(self.engine) as session:

@@ -16,6 +16,7 @@ class Controller:
             {
                 "press_scan_dir_path": self.scan_dir_path,
                 "press_match_file": self.match_file,
+                "tree_view_click": self.tree_view_click,
             }
         )
 
@@ -95,3 +96,33 @@ class Controller:
 
     def is_dev_name_exists(self, name: str) -> bool:
         return self.conn.is_dev_name_exists(name)
+
+    def tree_view_click(self, e):
+        # Необходимо сделать обработку на тот случай если в фокусе не файл,
+        # а диск
+        # file_id = int(self.view.tree_view.focus())
+        # file_dict = self.conn.get_file_by_id(file_id)
+        selected: str = self.view.tree_view.focus()
+        if "d" in selected:
+            self.tree_view_disk_selected(selected)
+        if "f" in selected:
+            self.tree_view_file_selected(selected)
+
+
+    def tree_view_disk_selected(self, iid: str):
+        self.view.l.configure(text=iid)
+
+    def tree_view_file_selected(self, iid: str):
+        file_id = int(iid[1::])
+        file_dict = self.conn.get_file_by_id(file_id)
+        if file_dict is None:
+            self.view.l.configure(text="Пусто", width=120) # Проработать возможность ошибки
+            return
+        disk_dict = self.conn.get_disk_dict_by_id(file_dict["disk_id"])
+        if file_dict["movie_id"] is not None:
+            movie_dict = self.conn.get_movie_by_id(file_dict["movie_id"])
+        else:
+            movie_dict = None
+        self.view.display_movie_frame(disk_dict=disk_dict, file_dict=file_dict, movie_dict=movie_dict)
+        # self.view.l.configure(text=file_dict, width=120) # 2 delete
+        

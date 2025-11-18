@@ -93,19 +93,19 @@ class View:
         self.l = ttk.Label(master=self.left_frame, text="---")
         self.l.grid(column=0, row=2)
 
-        self.tree_view.bind(
-            "<<TreeviewSelect>>",
-            lambda e: self.l.configure(
-                text=self.tree_view.index(self.tree_view.focus())
-            ),
-        )
+        # self.tree_view.bind(
+        #     "<<TreeviewSelect>>",
+        #     lambda e: self.l.configure(text=self.tree_view.focus()),
+        # )
 
     def insert_items_in_tree(self):
         for idx, disk in enumerate(self.tree_data, start=1):
             disk_name = disk.name
             if disk_name is None:
                 disk_name = str(f"Диск id: {disk.id}")
-            p = self.tree_view.insert(parent="", index=idx, text=disk_name, open=True)
+            p = self.tree_view.insert(
+                parent="", index=idx, iid=f"d{disk.id}", text=disk_name, open=True
+            )
             for j, f in enumerate(disk.files, start=(idx * 1000)):
                 if f.name_russian is not None:
                     text = f.name_russian
@@ -116,7 +116,7 @@ class View:
                 duration = f.duration if f.duration is not None else ""
                 premiere_date = f.premiere_date if f.premiere_date is not None else ""
                 c = self.tree_view.insert(
-                    iid=f.file_id,
+                    iid=f"f{f.file_id}",
                     parent=p,
                     index=j,
                     text=text,
@@ -125,31 +125,52 @@ class View:
 
     def right_frame_render(self):
         self.right_frame = ttk.Frame(self.root)
-        self.right_frame.grid(column=1, row=1)
+        self.right_frame.grid(column=1, row=1, sticky="nw")
         # self.right_frame.columnconfigure(1, weight=1)
 
-    def display_movie_frame(self):
-        self.lbl_device = ttk.Label(self.right_frame, text="Носитель:")
-        self.lbl_path = ttk.Label(self.right_frame, text="Путь:")
-        self.lbl_file_name = ttk.Label(self.right_frame, text="Имя файла:")
-        self.lbl_original_name = ttk.Label(
-            self.right_frame, text="Оригинальное название:"
-        )
-        self.lbl_russian_name = ttk.Label(self.right_frame, text="Русское название:")
-        self.lbl_year = ttk.Label(self.right_frame, text="Год премьеры:")
-        self.lbl_genres = ttk.Label(self.right_frame, text="Жанры:")
-        self.lbl_director = ttk.Label(self.right_frame, text="Режиссёр:")
-        self.lbl_actors = ttk.Label(self.right_frame, text="В ролях:")
+    def clear_frame(self, frame: ttk.Frame):
+        for child in frame.winfo_children():
+            child.destroy()
 
-        self.lbl_device.grid(column=0, row=0, sticky="e")
-        self.lbl_path.grid(column=0, row=1, sticky="e")
-        self.lbl_file_name.grid(column=0, row=2, sticky="e")
-        self.lbl_original_name.grid(column=0, row=3, sticky="e")
-        self.lbl_russian_name.grid(column=0, row=4, sticky="e")
-        self.lbl_year.grid(column=0, row=5, sticky="e")
-        self.lbl_genres.grid(column=0, row=6, sticky="e")
-        self.lbl_director.grid(column=0, row=7, sticky="e")
-        self.lbl_actors.grid(column=0, row=8, sticky="e")
+    def display_movie_frame(
+        self, disk_dict: dict, file_dict: dict, movie_dict: dict | None
+    ):
+        self.clear_frame(self.right_frame)
+        self.lbl_device = ttk.Label(
+            self.right_frame, text=f"Носитель: {disk_dict["disk_name"]}"
+        )
+        self.lbl_path = ttk.Label(
+            self.right_frame, text=f"Путь: {file_dict["disk_path"]}"
+        )
+        self.lbl_file_name = ttk.Label(
+            self.right_frame, text=f"Имя файла: {file_dict["file_name"]}"
+        )
+
+        self.lbl_device.grid(column=0, row=0, sticky="w")
+        self.lbl_path.grid(column=0, row=1, sticky="w")
+        self.lbl_file_name.grid(column=0, row=2, sticky="w")
+
+        if movie_dict is not None:
+            self.lbl_original_name = ttk.Label(
+                self.right_frame,
+                text=f"Оригинальное название: {movie_dict["name_original"]}",
+            )
+            self.lbl_russian_name = ttk.Label(
+                self.right_frame, text=f"Русское название: {movie_dict["name_russian"]}"
+            )
+            self.lbl_duration = ttk.Label(self.right_frame, text=f"Продолжительность: {movie_dict["duration"]}")
+            self.lbl_year = ttk.Label(self.right_frame, text=f"Год премьеры: {movie_dict["premiere_date"]}")
+            self.lbl_genres = ttk.Label(self.right_frame, text="Жанры:")
+            self.lbl_director = ttk.Label(self.right_frame, text="Режиссёр:")
+            self.lbl_actors = ttk.Label(self.right_frame, text="В ролях:")
+
+            self.lbl_original_name.grid(column=0, row=3, sticky="w")
+            self.lbl_russian_name.grid(column=0, row=4, sticky="w")
+            self.lbl_duration.grid(column=0, row=5, sticky="w")
+            self.lbl_year.grid(column=0, row=6, sticky="w")
+            self.lbl_genres.grid(column=0, row=7, sticky="w")
+            self.lbl_director.grid(column=0, row=8, sticky="w")
+            self.lbl_actors.grid(column=0, row=9, sticky="w")
 
     def status_bar_render(self):
         pass
@@ -157,6 +178,10 @@ class View:
     def setup_callbacks(self, callbacks: dict) -> None:
         self.btn_scan_disk.config(command=callbacks["press_scan_dir_path"])
         self.btn_match_file.config(command=callbacks["press_match_file"])
+        self.tree_view.bind(
+            "<<TreeviewSelect>>",
+            callbacks["tree_view_click"],
+        )
         # self.get_tree_data = callbacks["get_tree_data"]
 
     def directory_request(self) -> str:
