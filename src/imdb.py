@@ -11,10 +11,14 @@ def selecting_something():
         print(g.text)
 
 
-class Downloader:
+class DownloaderBase:
     def __init__(self, url: str) -> None:
         self.url = url
-# Нужна ли тут проверка на корректность ссылки?
+        self.response = self.grab_page()
+
+    def __repr__(self):
+        return f"{self.__class__.__name__}({url}) brings status code {self.response.status_code}."
+
     def grab_page(self) -> requests.Response:
         headers = {
             "accept": "image/avif,image/webp,image/apng,image/svg+xml,image/*,*/*;q=0.8",
@@ -34,3 +38,23 @@ class Downloader:
         response = requests.get(self.url, headers=headers)
         assert response.status_code == 200
         return response
+
+
+class DownloadTitle(DownloaderBase):
+    def __init__(self, url: str) -> None:
+        super().__init__(url)
+
+    def strip_page_details(self):
+        # Необходимо собрать со страницы следующие данные:
+        # - оригинальное название
+        # - русское название
+        # - тип полный метр или сериал
+        # - если полный метр, то продолжительность
+        # - дата премьеры
+        pass
+
+
+if __name__ == "__main__":
+    url = "https://www.imdb.com/title/tt0120815/"
+    d = DownloadTitle(url)
+    print(d)

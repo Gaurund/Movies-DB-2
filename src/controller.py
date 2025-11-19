@@ -108,21 +108,22 @@ class Controller:
         if "f" in selected:
             self.tree_view_file_selected(selected)
 
-
     def tree_view_disk_selected(self, iid: str):
-        self.view.l.configure(text=iid)
+        self.view.clear_frame(self.view.right_frame)
 
     def tree_view_file_selected(self, iid: str):
         file_id = int(iid[1::])
         file_dict = self.conn.get_file_by_id(file_id)
         if file_dict is None:
-            self.view.l.configure(text="Пусто", width=120) # Проработать возможность ошибки
+            self.view.l.configure(
+                text="Пусто", width=120
+            )  # Проработать возможность ошибки
             return
         disk_dict = self.conn.get_disk_dict_by_id(file_dict["disk_id"])
         if file_dict["movie_id"] is not None:
             movie_dict = self.conn.get_movie_by_id(file_dict["movie_id"])
         else:
             movie_dict = None
-        self.view.display_movie_frame(disk_dict=disk_dict, file_dict=file_dict, movie_dict=movie_dict)
-        # self.view.l.configure(text=file_dict, width=120) # 2 delete
-        
+        self.view.display_movie_frame(
+            disk_dict=disk_dict, file_dict=file_dict, movie_dict=movie_dict
+        )
