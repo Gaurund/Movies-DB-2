@@ -179,13 +179,34 @@ class View:
             self.lbl_genres.grid(column=0, row=7, sticky="w")
             self.lbl_director.grid(column=0, row=8, sticky="w")
             self.lbl_actors.grid(column=0, row=9, sticky="w")
-        
+
         id = file_dict["id"]
-        self.btn_match_file = ttk.Button(self.right_frame, text="Сопоставить",command=lambda: callback(id))
+        self.btn_match_file = ttk.Button(
+            self.right_frame, text="Сопоставить", command=lambda: callback(id)
+        )
         self.btn_match_file.grid(column=0, row=10, sticky="ws")
 
     def display_search_result(self, searched: dict):
         self.clear_frame(self.right_frame)
+        if len(searched) == 0:
+            self.lbl_warning = ttk.Label(
+                self.right_frame,
+                text="Ничего не найдено. Попробуйте изменить критерии поиска.",
+            )
+            self.lbl_warning.grid(column=0, row=0)
+        else:
+            self.lbl_warning = ttk.Label(
+                self.right_frame,
+                text="Найдены следующие вхождения.",
+            )
+            self.lbl_warning.grid(column=0, row=0)
+            buttons = [ttk.Button(master=self.right_frame) for _ in range(len(searched))]
+            i = 0
+            for k,v in searched.items():
+                buttons[i].config(text=f"{k} ({v})")
+                buttons[i].grid(column=0, row=2 + i)
+                i += 1
+
 
     def status_bar_render(self):
         pass
@@ -232,5 +253,7 @@ class View:
         return ""
 
     def new_movie_name_request(self, title, prompt, init_val) -> str | None:
-        new_name = simpledialog.askstring(title=title, prompt=prompt, initialvalue=init_val)
+        new_name = simpledialog.askstring(
+            title=title, prompt=prompt, initialvalue=init_val
+        )
         return new_name

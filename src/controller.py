@@ -136,7 +136,8 @@ class Controller:
         search_name = self.view.new_movie_name_request(
             title="Имя для поиска",
             prompt="Введите имя для поиска",
-            init_val=file_dict["file_name"]
+            init_val=file_dict["file_name"][:-4:]
         )
         self.view.l.configure(text=f"Вы выбрали {search_name}")
         searched = imdb.initial_search_imdb(search_name)
+        self.view.display_search_result(searched=searched)
