@@ -15,7 +15,7 @@ class Controller:
         self.view.setup_callbacks(
             {
                 "press_scan_dir_path": self.scan_dir_path,
-                "press_match_file": self.match_file,
+                "press_match_empties": self.match_empties,
                 "tree_view_click": self.tree_view_click,
             }
         )
@@ -67,7 +67,7 @@ class Controller:
             else:
                 return name
 
-    def match_file(self):
+    def match_empties(self):
         # Собрать в список все файлы из БД где нет файлов
         empties = self.conn.get_empties()
         # В цикле переберать файлы каждый раз предлагая завершить операцию
@@ -98,10 +98,6 @@ class Controller:
         return self.conn.is_dev_name_exists(name)
 
     def tree_view_click(self, e):
-        # Необходимо сделать обработку на тот случай если в фокусе не файл,
-        # а диск
-        # file_id = int(self.view.tree_view.focus())
-        # file_dict = self.conn.get_file_by_id(file_id)
         selected: str = self.view.tree_view.focus()
         if "d" in selected:
             self.tree_view_disk_selected(selected)
@@ -125,5 +121,11 @@ class Controller:
         else:
             movie_dict = None
         self.view.display_movie_frame(
-            disk_dict=disk_dict, file_dict=file_dict, movie_dict=movie_dict
+            disk_dict=disk_dict,
+            file_dict=file_dict,
+            movie_dict=movie_dict,
+            callback=self.click_match_file,
         )
+
+    def click_match_file(self, id):
+        self.view.l.configure(text=f"Этот айдишник равен {id}")

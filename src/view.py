@@ -34,10 +34,12 @@ class View:
         # self.top_frame.rowconfigure(0, weight=0)
 
         self.btn_scan_disk = ttk.Button(self.top_frame, text="Сканировать путь...")
-        self.btn_match_file = ttk.Button(self.top_frame, text="Сопоставить")
+        self.btn_match_empties = ttk.Button(
+            self.top_frame, text="Сопоставить пустые файлы..."
+        )
 
         self.btn_scan_disk.grid(column=0, row=0)
-        self.btn_match_file.grid(column=1, row=0)
+        self.btn_match_empties.grid(column=1, row=0)
 
     def left_frame_render(self):
         self.left_frame = ttk.Frame(self.root)
@@ -126,6 +128,8 @@ class View:
     def right_frame_render(self):
         self.right_frame = ttk.Frame(self.root)
         self.right_frame.grid(column=1, row=1, sticky="nw")
+        self.btn_match_file = ttk.Button(self.right_frame, text="Сопоставить")
+        # self.btn_match_file.grid(column=0, row=3)
         # self.right_frame.columnconfigure(1, weight=1)
 
     def clear_frame(self, frame: ttk.Frame):
@@ -133,7 +137,7 @@ class View:
             child.destroy()
 
     def display_movie_frame(
-        self, disk_dict: dict, file_dict: dict, movie_dict: dict | None
+        self, disk_dict: dict, file_dict: dict, movie_dict: dict | None, callback
     ):
         self.clear_frame(self.right_frame)
         self.lbl_device = ttk.Label(
@@ -158,8 +162,12 @@ class View:
             self.lbl_russian_name = ttk.Label(
                 self.right_frame, text=f"Русское название: {movie_dict["name_russian"]}"
             )
-            self.lbl_duration = ttk.Label(self.right_frame, text=f"Продолжительность: {movie_dict["duration"]}")
-            self.lbl_year = ttk.Label(self.right_frame, text=f"Год премьеры: {movie_dict["premiere_date"]}")
+            self.lbl_duration = ttk.Label(
+                self.right_frame, text=f"Продолжительность: {movie_dict["duration"]}"
+            )
+            self.lbl_year = ttk.Label(
+                self.right_frame, text=f"Год премьеры: {movie_dict["premiere_date"]}"
+            )
             self.lbl_genres = ttk.Label(self.right_frame, text="Жанры:")
             self.lbl_director = ttk.Label(self.right_frame, text="Режиссёр:")
             self.lbl_actors = ttk.Label(self.right_frame, text="В ролях:")
@@ -171,13 +179,17 @@ class View:
             self.lbl_genres.grid(column=0, row=7, sticky="w")
             self.lbl_director.grid(column=0, row=8, sticky="w")
             self.lbl_actors.grid(column=0, row=9, sticky="w")
+        
+        id = file_dict["id"]
+        self.btn_match_file = ttk.Button(self.right_frame, text="Сопоставить",command=lambda: callback(id))
+        self.btn_match_file.grid(column=0, row=10, sticky="ws")
 
     def status_bar_render(self):
         pass
 
     def setup_callbacks(self, callbacks: dict) -> None:
         self.btn_scan_disk.config(command=callbacks["press_scan_dir_path"])
-        self.btn_match_file.config(command=callbacks["press_match_file"])
+        self.btn_match_empties.config(command=callbacks["press_match_empties"])
         self.tree_view.bind(
             "<<TreeviewSelect>>",
             callbacks["tree_view_click"],

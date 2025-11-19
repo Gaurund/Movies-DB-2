@@ -4,44 +4,6 @@ import requests
 import re
 
 
-def selecting_something():
-    def script_application_ld_json(tag):
-        return tag.has_attr("type") and tag["type"] == "application/ld+json"
-
-    def href_releaseinfo(href):
-        return href and re.compile("releaseinfo").search(href)
-
-    def search_stars(tag):
-        return tag.has_attr("data-testid") and tag["data-testid"] == "title-pc-principal-credit"
-
-    with open("src/r.html", encoding="utf-8") as f:
-        soup = BeautifulSoup(f, features="html.parser")
-
-    # d = soup.select("div.ipc-chip-list__scroller > a > span")
-    # for g in d:
-    #     print(g.text)
-    # e = soup.select("script")
-    # for _ in e:
-    #     print(_.text)
-    # stars = soup.find(search_stars)
-    # for s in stars:
-    #     print(s, end="\n\n")
-    # s = soup.find_all(script_application_ld_json)
-    # json_dict = json.loads(s[0].text)
-    # movie = {
-    #     "name_original": json_dict["name"],
-    #     "name_russian": json_dict["alternateName"],
-    #     # "duration": json_dict["duration"],
-    #     # "premiere_date": json_dict[""],
-    #     "imdb_link": json_dict["url"],
-    #     "type": json_dict["@type"],
-    # }
-    # print(movie)
-    # link = soup.find(href=href_releaseinfo)
-    # print(link.text)
-    pattern = "title-pc-principal-credit"
-
-
 class DownloaderBase:
     def __init__(self, url: str) -> None:
         self.url = url
@@ -85,7 +47,7 @@ class DownloadTitle(DownloaderBase):
         pass
 
 
-def grab_page(url) -> requests.Response:
+def grab_page(url: str) -> requests.Response:
     headers = {
         "accept": "image/avif,image/webp,image/apng,image/svg+xml,image/*,*/*;q=0.8",
         "accept-encoding": "gzip, deflate, br, zstd",
@@ -106,10 +68,7 @@ def grab_page(url) -> requests.Response:
     return response
 
 
-def strip_page_details(response: requests.Response):
-    def script_application_ld_json(tag):
-        return tag.has_attr("type") and tag["type"] == "application/ld+json"
-
+def strip_page_details(response: requests.Response) -> dict:
     def href_releaseinfo(href):
         return href and re.compile("releaseinfo").search(href)
 
@@ -117,10 +76,10 @@ def strip_page_details(response: requests.Response):
     movie_tags = [
         span.text for span in soup.select("div.ipc-chip-list__scroller > a > span")
     ]
-    scrit_json = soup.find_all(script_application_ld_json)
+    scrit_json = soup.find_all(type="application/ld+json")
     json_dict = json.loads(scrit_json[0].text)
     premiere_link = soup.find(href=href_releaseinfo)
-    
+
     if "duration" in json_dict.keys():
         duration = json_dict["duration"]
     else:
@@ -134,17 +93,28 @@ def strip_page_details(response: requests.Response):
         "imdb_link": json_dict["url"],
         "type": json_dict["@type"],
         "genres": movie_tags,
-        # "actors": actors
     }
-
-
     return movie
+
+def make_search_string(movie_name: str) -> str:
+    search_str: str = "https://www.imdb.com/find/?q="
+    search_str += movie_name
+    return search_str
+
+    # Обращение к IMDb и получение страницы с результатами поиска
+    # Оформление результатов в список и демонстрация списка на экране
+    # Получение ID для поиска конкретной страницы от вида и контроллера
+    # Загрузка страницы с IMDb и получение деталей фильма 
+    # Возвращение в контроллер деталей фильма
+    # Контроллер обновляет данные в БД и в отображении дерева в виде
+def initial_search_imdb(movie_name: str):
+    pass
 
 
 if __name__ == "__main__":
-    url = "https://www.imdb.com/title/tt0120815/"
-    # url = "https://www.imdb.com/title/tt0211192/"
-    # page = grab_page(url)
-    # movie = strip_page_details(page)
-    # print(movie)
-    selecting_something()
+    # url = "https://www.imdb.com/title/tt0120815/"
+    url = "https://www.imdb.com/title/tt0211192/"
+    page = grab_page(url)
+    movie = strip_page_details(page)
+    print(movie)
+    # selecting_something()
