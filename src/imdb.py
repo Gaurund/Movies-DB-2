@@ -107,8 +107,18 @@ def make_search_string(movie_name: str) -> str:
     # Загрузка страницы с IMDb и получение деталей фильма 
     # Возвращение в контроллер деталей фильма
     # Контроллер обновляет данные в БД и в отображении дерева в виде
-def initial_search_imdb(movie_name: str):
-    pass
+def initial_search_imdb(movie_name: str) -> dict:
+    search_url = make_search_string(movie_name)
+    response = grab_page(search_url)
+    soup = BeautifulSoup(response.text, features="html.parser")
+    movies = soup.select("ul.ipc-metadata-list--base > li > div > div > div > div > div.cli-children")
+    searched = {}
+    for movie in movies:
+        lil_soup = BeautifulSoup(str(movie), "html.parser")
+        key = lil_soup.select("div.ipc-title--title > a")
+        year = lil_soup.select("div.cli-title-metadata > span")
+        searched[key[0].text]=year[0].text
+    return searched
 
 
 if __name__ == "__main__":

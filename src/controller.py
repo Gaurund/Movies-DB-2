@@ -1,3 +1,4 @@
+from src import imdb
 from src.file_ops import get_dev_files, RealFile, Device, DeviceFiles
 from src.db_ops import DB_connection
 from src.view import View
@@ -128,4 +129,14 @@ class Controller:
         )
 
     def click_match_file(self, id):
-        self.view.l.configure(text=f"Этот айдишник равен {id}")
+        file_dict = self.conn.get_file_by_id(id)
+        self.view.l.configure(
+            text=f"Этот айдишник равен {id} и название файла: {file_dict["file_name"]}"
+        )
+        search_name = self.view.new_movie_name_request(
+            title="Имя для поиска",
+            prompt="Введите имя для поиска",
+            init_val=file_dict["file_name"]
+        )
+        self.view.l.configure(text=f"Вы выбрали {search_name}")
+        searched = imdb.initial_search_imdb(search_name)

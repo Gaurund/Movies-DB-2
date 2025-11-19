@@ -184,6 +184,9 @@ class View:
         self.btn_match_file = ttk.Button(self.right_frame, text="Сопоставить",command=lambda: callback(id))
         self.btn_match_file.grid(column=0, row=10, sticky="ws")
 
+    def display_search_result(self, searched: dict):
+        self.clear_frame(self.right_frame)
+
     def status_bar_render(self):
         pass
 
@@ -214,7 +217,7 @@ class View:
         print(path_name + "\\" + file_name)
         dialog = Toplevel(master=self.root)
         frame = ttk.Frame(master=dialog)
-        btn_path = ttk.Button(master=frame, text=path_name)
+        btn_path = ttk.Button(master=frame, text=path_name, command=lambda: path_name)
         btn_file = ttk.Button(master=frame, text=file_name)
 
         dialog.grid()
@@ -227,3 +230,7 @@ class View:
         # имя файла
         # свой вариант
         return ""
+
+    def new_movie_name_request(self, title, prompt, init_val) -> str | None:
+        new_name = simpledialog.askstring(title=title, prompt=prompt, initialvalue=init_val)
+        return new_name
