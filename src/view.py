@@ -16,8 +16,8 @@ class View:
         self.root = root
         self.root.title("Фильмотека")
         self.root.geometry("1200x800")
-        # self.root.grid_columnconfigure(0, weight=1)
-        # self.root.grid_rowconfigure(0, weight=1)
+        self.root.grid_columnconfigure([0,1], weight=1)
+        self.root.grid_rowconfigure([1,2], weight=1)
 
         self.tree_data = []
 
@@ -30,8 +30,7 @@ class View:
     def top_frame_render(self):
         self.top_frame = ttk.Frame(self.root)
         self.top_frame.grid(column=0, row=0, columnspan=2, sticky="nsw")
-        # self.top_frame.columnconfigure(0, weight=1)
-        # self.top_frame.rowconfigure(0, weight=0)
+        self.top_frame.columnconfigure(0, weight=1)
 
         self.btn_scan_disk = ttk.Button(self.top_frame, text="Сканировать путь...")
         self.btn_match_empties = ttk.Button(
@@ -43,9 +42,9 @@ class View:
 
     def left_frame_render(self):
         self.left_frame = ttk.Frame(self.root)
-        self.left_frame.grid(column=0, row=1, sticky="NSW")
-        # self.left_frame.columnconfigure(1, weight=1)
-        # self.left_frame.rowconfigure(1, weight=1)
+        self.left_frame.grid(column=0, row=1, sticky="NSEW")
+        self.left_frame.columnconfigure([0,1], weight=1)
+        self.left_frame.rowconfigure(0, weight=1)
 
         tree_columns = {
             "#0": {"label": "Имя", "name": "name", "stretch": True, "width": "400"},
@@ -70,7 +69,7 @@ class View:
             self.tree_view.column(k, stretch=v["stretch"], width=v["width"])
             self.tree_view.heading(k, text=v["label"])
         self.insert_items_in_tree()
-        self.tree_view.grid(column=0, row=0, sticky="N")
+        self.tree_view.grid(column=0, row=0, sticky="NSEW")
         # self.tree_view.grid_columnconfigure(2, weight=1)
         # self.tree_view.grid_rowconfigure(2, weight=1)
 
@@ -81,8 +80,8 @@ class View:
             master=self.left_frame, orient="horizontal", command=self.tree_view.xview
         )
 
-        self.tree_view_scrollbar_y.grid(column=1, row=0, sticky="NS")
-        self.tree_view_scrollbar_x.grid(column=0, row=1, sticky="EW")
+        self.tree_view_scrollbar_y.grid(column=1, row=0, sticky="NSW")
+        self.tree_view_scrollbar_x.grid(column=0, row=1, sticky="NEW")
         # self.tree_view_scrollbar_y.grid_columnconfigure(1, weight=1)
         # self.tree_view_scrollbar_y.grid_rowconfigure(1, weight=1)
         # self.tree_view_scrollbar_x.grid_columnconfigure(1, weight=1)
