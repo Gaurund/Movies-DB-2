@@ -202,8 +202,8 @@ class View:
             self.lbl_warning.grid(column=0, row=0)
             buttons = [ttk.Button(master=self.right_frame) for _ in range(len(searched))]
             i = 0
-            for k,v in searched.items():
-                buttons[i].config(text=f"{k} ({v})")
+            for e in searched:
+                buttons[i].config(text=f"{e["name"]} ({e["premiere_date"]})")
                 buttons[i].grid(column=0, row=2 + i)
                 i += 1
 

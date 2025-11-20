@@ -4,12 +4,14 @@ from bs4 import BeautifulSoup
 import requests
 import re
 
+
 @dataclass
 class ImdbVariant:
     id: int
     name: str
     url: str
     premiere_date: str
+
 
 class DownloaderBase:
     def __init__(self, url: str) -> None:
@@ -103,6 +105,7 @@ def strip_page_details(response: requests.Response) -> dict:
     }
     return movie
 
+
 def make_search_string(movie_name: str) -> str:
     search_str: str = "https://www.imdb.com/find/?q="
     search_str += movie_name
@@ -111,26 +114,30 @@ def make_search_string(movie_name: str) -> str:
     # Обращение к IMDb и получение страницы с результатами поиска
     # Оформление результатов в список и демонстрация списка на экране
     # Получение ID для поиска конкретной страницы от вида и контроллера
-    # Загрузка страницы с IMDb и получение деталей фильма 
+    # Загрузка страницы с IMDb и получение деталей фильма
     # Возвращение в контроллер деталей фильма
     # Контроллер обновляет данные в БД и в отображении дерева в виде
+
+
 def initial_search_imdb(movie_name: str) -> list:
     search_url = make_search_string(movie_name)
     response = grab_page(search_url)
     soup = BeautifulSoup(response.text, features="html.parser")
-    movies = soup.select("ul.ipc-metadata-list--base > li > div > div > div > div > div.cli-children")
+    movies = soup.select(
+        "ul.ipc-metadata-list--base > li > div > div > div > div > div.cli-children"
+    )
     searched = []
     for i, movie in enumerate(movies):
         lil_soup = BeautifulSoup(str(movie), "html.parser")
         name = lil_soup.select("div.ipc-title--title > a")
         year = lil_soup.select("div.cli-title-metadata > span")
         searched.append(
-            ImdbVariant(
-                id=i,
-                name=name[0].text,
-                url=lil_soup.a["href"],
-                premiere_date=year[0].text,
-            )
+            {
+                "id": i,
+                "name": name[0].text,
+                "url": lil_soup.a["href"],
+                "premiere_date": year[0].text,
+            }
         )
     return searched
 
